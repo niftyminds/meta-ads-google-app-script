@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="cs">
+  <head>
+    <meta charset="utf-8" />
+    <title>Manuální Import Dat z Meta Ads</title>
+    <style>
+      :root {
+        --primary-color: #007bff;
+        --primary-hover-color: #0056b3;
+        --light-gray-color: #f8f9fa;
+        --medium-gray-color: #e9ecef;
+        --dark-gray-color: #6c757d;
+        --text-color: #212529;
+        --border-color: #ced4da;
+        --border-radius: 0.3rem;
+        --box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+      }
+      body {
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif,
+          "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
+          "Noto Color Emoji";
+        background-color: var(--light-gray-color);
+        color: var(--text-color);
+        margin: 0;
+        padding: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        min-height: 100vh;
+      }
+      #manualImportContainer {
+        background-color: #ffffff;
+        padding: 25px;
+        border-radius: var(--border-radius);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        max-width: 600px;
+      }
+      label,
+      .label-header {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: var(--dark-gray-color);
+        cursor: default;
+      }
+      .checkbox-label {
+        display: block;
+        margin-bottom: 6px;
+        font-weight: normal;
+        color: var(--text-color);
+        cursor: pointer;
+        padding: 2px 0;
+      }
+      .checkbox-label input[type="checkbox"] {
+        margin-right: 8px;
+        vertical-align: middle;
+      }
+      .checkbox-label.disabled-label {
+        color: var(--medium-gray-color);
+        cursor: not-allowed;
+      }
+      input[type="date"],
+      input[type="text"],
+      input[type="time"],
+      select {
+        width: 100%;
+        padding: 10px 12px;
+        margin-bottom: 18px;
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius);
+        box-sizing: border-box;
+        font-size: 1rem;
+        background-color: #fff;
+        color: var(--text-color);
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+      }
+      input[type="date"]:focus,
+      input[type="text"]:focus,
+      input[type="time"]:focus,
+      select:focus {
+        border-color: var(--primary-color);
+        outline: 0;
+        box-shadow: var(--box-shadow);
+      }
+      button {
+        background-color: var(--primary-color);
+        color: white;
+        padding: 12px 20px;
+        border: none;
+        border-radius: var(--border-radius);
+        cursor: pointer;
+        font-size: 1rem;
+        font-weight: 600;
+        transition: background-color 0.15s ease-in-out;
+        width: 100%;
+        margin-top: 10px;
+      }
+      button:hover {
+        background-color: var(--primary-hover-color);
+      }
+      button:disabled {
+        background-color: var(--medium-gray-color);
+        cursor: not-allowed;
+      }
+      .form-group {
+        margin-bottom: 20px;
+      }
+      .form-group:last-of-type {
+        margin-bottom: 0;
+      }
+
+      /* Obecné styly pro všechny kontejnery se seznamem checkboxů */
+      .checkbox-list-container {
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius);
+        padding: 10px;
+        overflow-y: auto; /* Klíčové pravidlo pro svislé posouvání */
+        background-color: #fff;
+        max-height: 150px; /* Výchozí maximální výška, může být přepsána */
+      }
+
+      /* Specifické přepsání max-výšky pro kontejner seznamu účtů */
+      #mAccountsList.checkbox-list-container {
+        max-height: 180px;
+      }
+      #mMetricsSectionsContainer .checkbox-list-container {
+        /* max-height: 150px; Již definováno v .checkbox-list-container */
+      }
+
+      .metric-section {
+        margin-bottom: 20px;
+      }
+      .metric-section:last-child {
+        margin-bottom: 0;
+      }
+      .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+      }
+      .section-header h4 {
+        margin: 0;
+        font-size: 1rem;
+        color: var(--primary-color);
+      }
+      .section-header .toggle-buttons {
+        display: flex;
+        align-items: center;
+      }
+      .section-header .toggle-buttons button {
+        background: none;
+        border: none;
+        color: var(--primary-color);
+        cursor: pointer;
+        padding: 2px 4px;
+        font-size: 0.85rem;
+        font-weight: normal;
+        text-decoration: underline;
+        width: auto;
+        margin: 0 2px;
+      }
+      .section-header .toggle-buttons button:hover {
+        color: var(--primary-hover-color);
+        text-decoration: none;
+      }
+      .selected-count {
+        font-size: 0.85rem;
+        color: var(--dark-gray-color);
+        margin-left: 8px;
+        font-weight: normal;
+      }
+      .placeholder-text {
+        color: var(--dark-gray-color);
+        font-style: italic;
+        padding: 10px;
+        text-align: center;
+      }
+      .date-range-group {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+      }
+      .date-range-group .form-group {
+        flex: 1;
+      }
+    </style>
+    <base target="_top" />
+  </head>
+  <body>
+    <div id="manualImportContainer">
+      <h3>Manuální import dat</h3>
+      <form id="mForm">
+        <div class="form-group">
+          <label for="mLevel">Úroveň dat:</label>
+          <select id="mLevel">
+            <option value="ad" selected>Reklama (Ad)</option>
+            <option value="adset">Sestava reklam (Ad Set)</option>
+            <option value="campaign">Kampaň (Campaign)</option>
+            <option value="account">Účet (Account)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="checkbox-label" id="mShowCreativeImageLabel">
+            <input
+              type="checkbox"
+              id="mShowCreativeImage"
+              name="showCreativeImage"
+            />
+            Zobrazit náhled kreativy <small>(pouze pro úroveň "Reklama")</small>
+          </label>
+        </div>
+
+        <div class="form-group">
+          <label for="mDatePreset">Časové období:</label>
+          <select id="mDatePreset">
+            <option value="today">Dnes</option>
+            <option value="yesterday" selected>Včera</option>
+            <option value="last_3d">Poslední 3 dny</option>
+            <option value="last_7d">Poslední 7 dní</option>
+            <option value="last_14d">Poslední 14 dní</option>
+            <option value="last_30d">Poslední 30 dní</option>
+            <option value="this_month">Tento měsíc</option>
+            <option value="last_month">Minulý měsíc</option>
+            <option value="custom">Vlastní rozsah...</option>
+          </select>
+        </div>
+
+        <div
+          id="mCustomDateRange"
+          class="date-range-group"
+          style="display: none"
+        >
+          <div class="form-group">
+            <label for="mDateSince">Od:</label>
+            <input type="date" id="mDateSince" />
+          </div>
+          <div class="form-group">
+            <label for="mDateUntil">Do:</label>
+            <input type="date" id="mDateUntil" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="mGranularity">Granularita dat:</label>
+          <select id="mGranularity">
+            <option value="1" selected>Denně</option>
+            <option value="7">Týdně</option>
+            <option value="monthly">Měsíčně</option>
+            <option value="yearly">Ročně</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <span class="label-header">Metriky:</span>
+          <div id="mMetricsSectionsContainer">
+            <p class="placeholder-text" id="mMetricsPlaceholder">
+              Načítám metriky...
+            </p>
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="section-header">
+            <span class="label-header">Reklamní účty:</span>
+            <div class="toggle-buttons">
+              <button type="button" onclick="toggleAllAccountCheckboxes(true)">
+                Vše</button
+              >|
+              <button type="button" onclick="toggleAllAccountCheckboxes(false)">
+                Nic
+              </button>
+              <span id="mAccountsCount" class="selected-count">(0)</span>
+            </div>
+          </div>
+          <input
+            type="text"
+            id="mAccountSearch"
+            placeholder="Vyhledat účet..."
+            oninput="filterAccounts()"
+          />
+          <div id="mAccountsList" class="checkbox-list-container">
+            <p class="placeholder-text" id="mAccountsInitialPlaceholder">
+              Načítám účty...
+            </p>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="checkbox-label">
+            <input type="checkbox" id="mClearSheet" name="clearSheet" checked />
+            Vyčistit list před importem (vytvoří nový, pokud neexistuje)
+          </label>
+        </div>
+
+        <button type="button" id="mImportButton" onclick="startImport()">
+          📈 Provést import
+        </button>
+      </form>
+    </div>
+
+    <script>
+      const categorizedMetrics = {
+        general: [
+          { value: "spend", label: "Spend" },
+          { value: "impressions", label: "Impressions" },
+          { value: "reach", label: "Reach" },
+          { value: "frequency", label: "Frequency" },
+          { value: "clicks", label: "Clicks (All)" },
+          { value: "cpc", label: "CPC" },
+          { value: "ctr", label: "CTR" },
+          { value: "cpm", label: "CPM" },
+          { value: "outbound_clicks", label: "Outbound Clicks" },
+          {
+            value: "cost_per_outbound_click",
+            label: "Cost per Outbound Click",
+          },
+          { value: "outbound_ctr", label: "Outbound CTR" },
+          { value: "link_click", label: "Link Clicks (Action)" },
+          {
+            value: "cost_per_link_click",
+            label: "Cost per Link Click (Action)",
+          },
+          {
+            value: "link_click_through_rate",
+            label: "Link Click-Through Rate (Link CTR)",
+          },
+        ],
+        ecommerce: [
+          { value: "view_content", label: "View Content (Action)" },
+          {
+            value: "cost_per_view_content",
+            label: "Cost per View Content (Action)",
+          },
+          { value: "adds_to_cart", label: "Adds to Cart (Action)" },
+          {
+            value: "cost_per_add_to_cart",
+            label: "Cost per Add to Cart (Action)",
+          },
+          {
+            value: "checkouts_initiated",
+            label: "Checkouts Initiated (Action)",
+          },
+          {
+            value: "cost_per_checkout_initiated",
+            label: "Cost per Checkout Initiated (Action)",
+          },
+          { value: "purchases", label: "Purchases (Action)" },
+          { value: "cost_per_purchase", label: "Cost per Purchase (Action)" },
+          { value: "purchase_roas", label: "Purchase ROAS" }, // ROAS je přímá metrika
+        ],
+        leadgen: [
+          { value: "leads", label: "Leads (Action)" },
+          { value: "cost_per_lead", label: "Cost per Lead (Action)" },
+          { value: "unique_actions_lead", label: "Unique Leads (Action)" },
+        ],
+      };
+      const sectionTitles = {
+        general: "Obecné metriky výkonu",
+        ecommerce: "E-commerce (Konverze)",
+        leadgen: "Lead Gen (Konverze)",
+      };
+
+      function updateSelectedCount(containerId, counterId) {
+        const container = document.getElementById(containerId);
+        const counter = document.getElementById(counterId);
+        if (container && counter) {
+          const selectedItems = container.querySelectorAll(
+            'input[type="checkbox"][name="metric"]:checked'
+          ).length;
+          counter.textContent = `(${selectedItems})`;
+        }
+      }
+
+      function updateAllSectionMetricCounts() {
+        Object.keys(categorizedMetrics).forEach((sectionKey) => {
+          updateSelectedCount(
+            `mMetrics-${sectionKey}-list`,
+            `mMetrics-${sectionKey}-count`
+          );
+        });
+      }
+
+      function updateAccountsCounter() {
+        const container = document.getElementById("mAccountsList");
+        const counter = document.getElementById("mAccountsCount");
+        if (container && counter) {
+          const selectedItems = container.querySelectorAll(
+            'input[type="checkbox"][name="account"]:checked'
+          ).length;
+          counter.textContent = `(${selectedItems})`;
+        }
+      }
+
+      function toggleCreativeCheckboxAvailability() {
+        const levelSelect = document.getElementById("mLevel");
+        const creativeCheckbox = document.getElementById("mShowCreativeImage");
+        const creativeCheckboxLabel = document.getElementById(
+          "mShowCreativeImageLabel"
+        );
+
+        if (levelSelect.value === "ad") {
+          creativeCheckbox.disabled = false;
+          creativeCheckboxLabel.classList.remove("disabled-label");
+        } else {
+          creativeCheckbox.disabled = true;
+          creativeCheckbox.checked = false;
+          creativeCheckboxLabel.classList.add("disabled-label");
+        }
+      }
+
+      function toggleCheckboxesInSection(sectionCheckboxListId, checkedState) {
+        const sectionList = document.getElementById(sectionCheckboxListId);
+        if (sectionList) {
+          sectionList
+            .querySelectorAll('input[type="checkbox"][name="metric"]')
+            .forEach((cb) => (cb.checked = checkedState));
+        }
+        updateAllSectionMetricCounts();
+      }
+
+      function populateMetrics() {
+        const sectionsContainer = document.getElementById(
+          "mMetricsSectionsContainer"
+        );
+        sectionsContainer.innerHTML = "";
+
+        Object.keys(categorizedMetrics).forEach((sectionKey) => {
+          const metricsInSection = categorizedMetrics[sectionKey];
+          if (metricsInSection.length === 0) return;
+
+          const sectionDiv = document.createElement("div");
+          sectionDiv.className = "metric-section";
+          sectionDiv.id = `mMetrics-${sectionKey}`;
+
+          const sectionHeaderDiv = document.createElement("div");
+          sectionHeaderDiv.className = "section-header";
+
+          const title = document.createElement("h4");
+          title.textContent =
+            sectionTitles[sectionKey] ||
+            sectionKey.charAt(0).toUpperCase() + sectionKey.slice(1);
+          sectionHeaderDiv.appendChild(title);
+
+          const toggleButtonsDiv = document.createElement("div");
+          toggleButtonsDiv.className = "toggle-buttons";
+
+          const selectAllButton = document.createElement("button");
+          selectAllButton.type = "button";
+          selectAllButton.textContent = "Vše";
+          const sectionCheckboxListId = `mMetrics-${sectionKey}-list`;
+          selectAllButton.onclick = function () {
+            toggleCheckboxesInSection(sectionCheckboxListId, true);
+          };
+
+          const deselectAllButton = document.createElement("button");
+          deselectAllButton.type = "button";
+          deselectAllButton.textContent = "Nic";
+          deselectAllButton.onclick = function () {
+            toggleCheckboxesInSection(sectionCheckboxListId, false);
+          };
+
+          const countSpan = document.createElement("span");
+          countSpan.id = `mMetrics-${sectionKey}-count`;
+          countSpan.className = "selected-count";
+          countSpan.textContent = "(0)";
+
+          toggleButtonsDiv.appendChild(selectAllButton);
+          toggleButtonsDiv.appendChild(document.createTextNode("|"));
+          toggleButtonsDiv.appendChild(deselectAllButton);
+          toggleButtonsDiv.appendChild(countSpan);
+          sectionHeaderDiv.appendChild(toggleButtonsDiv);
+          sectionDiv.appendChild(sectionHeaderDiv);
+
+          const checkboxListContainer = document.createElement("div");
+          checkboxListContainer.className = "checkbox-list-container";
+          checkboxListContainer.id = sectionCheckboxListId;
+
+          metricsInSection.forEach((metric) => {
+            const label = document.createElement("label");
+            label.className = "checkbox-label";
+            const checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.name = "metric";
+            checkbox.value = metric.value;
+            checkbox.addEventListener("change", updateAllSectionMetricCounts);
+            label.appendChild(checkbox);
+            label.appendChild(
+              document.createTextNode(` ${metric.label || metric.value}`)
+            );
+            checkboxListContainer.appendChild(label);
+          });
+          sectionDiv.appendChild(checkboxListContainer);
+          sectionsContainer.appendChild(sectionDiv);
+        });
+        updateAllSectionMetricCounts();
+      }
+
+      function populateAccounts(accounts) {
+        const container = document.getElementById("mAccountsList");
+        container.innerHTML = "";
+        if (accounts && accounts.length > 0) {
+          accounts.forEach((acc) => {
+            const label = document.createElement("label");
+            label.className = "checkbox-label";
+            const checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.name = "account";
+            checkbox.value = acc.id;
+            checkbox.addEventListener("change", updateAccountsCounter);
+            label.appendChild(checkbox);
+            label.appendChild(
+              document.createTextNode(` ${acc.name} (act_${acc.id})`)
+            );
+            container.appendChild(label);
+          });
+        } else {
+          container.innerHTML =
+            '<p class="placeholder-text">Žádné účty nenalezeny.</p>';
+        }
+        updateAccountsCounter();
+        filterAccounts();
+      }
+
+      function toggleAllAccountCheckboxes(checkedState) {
+        document
+          .querySelectorAll(
+            '#mAccountsList input[type="checkbox"][name="account"]'
+          )
+          .forEach((cb) => (cb.checked = checkedState));
+        updateAccountsCounter();
+        filterAccounts();
+      }
+
+      function filterAccounts() {
+        const searchTerm = document
+          .getElementById("mAccountSearch")
+          .value.toLowerCase();
+        const accountsListDiv = document.getElementById("mAccountsList");
+        const accountLabels =
+          accountsListDiv.getElementsByClassName("checkbox-label");
+        let visibleAccountCount = 0;
+        let hasAccounts = accountLabels.length > 0;
+
+        for (let i = 0; i < accountLabels.length; i++) {
+          const label = accountLabels[i];
+          const labelText = label.textContent || label.innerText;
+          if (labelText.toLowerCase().includes(searchTerm)) {
+            label.style.display = "block";
+            visibleAccountCount++;
+          } else {
+            label.style.display = "none";
+          }
+        }
+
+        const noAccountsPlaceholder = accountsListDiv.querySelector(
+          "#mNoAccountsFoundMessage"
+        );
+        if (noAccountsPlaceholder) noAccountsPlaceholder.remove();
+
+        const loadingPlaceholder =
+          accountsListDiv.querySelector(".placeholder-text");
+        if (loadingPlaceholder && hasAccounts)
+          loadingPlaceholder.style.display = "none";
+
+        if (hasAccounts && visibleAccountCount === 0 && searchTerm) {
+          const p = document.createElement("p");
+          p.id = "mNoAccountsFoundMessage";
+          p.className = "placeholder-text";
+          p.textContent = "Žádné účty neodpovídají hledání.";
+          accountsListDiv.appendChild(p);
+        }
+      }
+
+      function startImport() {
+        const level = document.getElementById("mLevel").value;
+        const showCreativeImage =
+          document.getElementById("mShowCreativeImage").checked;
+        const datePresetElement = document.getElementById("mDatePreset");
+        const clearSheet = document.getElementById("mClearSheet").checked;
+        const granularity = document.getElementById("mGranularity").value;
+
+        let timeRange = null;
+        let datePreset = null;
+
+        if (datePresetElement.value === "custom") {
+          const since = document.getElementById("mDateSince").value;
+          const until = document.getElementById("mDateUntil").value;
+          if (!since || !until) {
+            alert("Pro vlastní rozsah vyberte počáteční i koncové datum.");
+            return;
+          }
+          if (new Date(since) > new Date(until)) {
+            alert("Počáteční datum nesmí být pozdější než koncové datum.");
+            return;
+          }
+          timeRange = { since: since, until: until };
+        } else {
+          datePreset = datePresetElement.value;
+        }
+
+        const selectedMetrics = Array.from(
+          document.querySelectorAll(
+            '#mMetricsSectionsContainer input[name="metric"]:checked'
+          )
+        ).map((cb) => cb.value);
+        if (selectedMetrics.length === 0) {
+          alert("Vyberte alespoň jednu metriku.");
+          return;
+        }
+
+        const selectedAccounts = Array.from(
+          document.querySelectorAll(
+            '#mAccountsList input[name="account"]:checked'
+          )
+        ).map((cb) => cb.value);
+        if (selectedAccounts.length === 0) {
+          alert("Vyberte alespoň jeden reklamní účet.");
+          return;
+        }
+
+        const payload = {
+          accounts: selectedAccounts,
+          metrics: selectedMetrics,
+          level: level,
+          gran: granularity,
+          datePreset: datePreset,
+          timeRange: timeRange,
+          clearSheet: clearSheet,
+          showCreativeImage: showCreativeImage,
+        };
+
+        const importButton = document.getElementById("mImportButton");
+        importButton.textContent = "⏳ Importuji...";
+        importButton.disabled = true;
+
+        google.script.run
+          .withSuccessHandler(function (response) {
+            alert("Import dokončen!");
+            google.script.host.close();
+          })
+          .withFailureHandler(function (error) {
+            alert("Chyba při importu: " + error.message);
+            importButton.textContent = "📈 Provést import";
+            importButton.disabled = false;
+          })
+          .getMetaAdsDataUI(payload);
+      }
+
+      function initializeDialog() {
+        if (
+          typeof google === "undefined" ||
+          typeof google.script === "undefined" ||
+          typeof google.script.run === "undefined"
+        ) {
+          setTimeout(initializeDialog, 200);
+          return;
+        }
+
+        populateMetrics();
+
+        google.script.run
+          .withSuccessHandler(populateAccounts)
+          .withFailureHandler((err) => {
+            document.getElementById("mAccountsList").innerHTML =
+              '<p class="placeholder-text" style="color:red;">Chyba při načítání účtů.</p>';
+            alert(
+              "Chyba při načítání seznamu účtů: " +
+                (err.message || JSON.stringify(err))
+            );
+          })
+          .getAccountList();
+
+        document
+          .getElementById("mLevel")
+          .addEventListener("change", toggleCreativeCheckboxAvailability);
+        toggleCreativeCheckboxAvailability();
+
+        document
+          .getElementById("mDatePreset")
+          .addEventListener("change", function () {
+            document.getElementById("mCustomDateRange").style.display =
+              this.value === "custom" ? "flex" : "none";
+            try {
+              google.script.host.setHeight(document.body.scrollHeight + 20);
+            } catch (e) {}
+          });
+
+        const today = new Date();
+        const yesterday = new Date(today);
+        yesterday.setDate(today.getDate() - 1);
+        const formatDate = (date) => date.toISOString().split("T")[0];
+        document.getElementById("mDateUntil").value = formatDate(yesterday);
+        document.getElementById("mDateSince").value = formatDate(yesterday);
+
+        try {
+          google.script.host.setHeight(document.body.scrollHeight + 20);
+        } catch (e) {}
+      }
+
+      window.onload = initializeDialog;
+    </script>
+  </body>
+</html>

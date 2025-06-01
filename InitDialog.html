@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="cs">
+  <head>
+    <meta charset="utf-8" />
+    <base target="_top" />
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        padding: 16px;
+      }
+      button {
+        padding: 8px 16px;
+        font-size: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <p>
+      Chceš vytvořit nebo vyčistit list <strong>Settings</strong> se základními
+      hlavičkami?
+    </p>
+    <button onclick="runInit()">Ano, vytvořit Settings</button>
+    <button onclick="google.script.host.close()" style="margin-left: 8px">
+      Zrušit
+    </button>
+
+    <script>
+      function runInit() {
+        google.script.run
+          .withSuccessHandler(() => {
+            google.script.host.close();
+            // můžeš přidat alert, např.:
+            SpreadsheetApp.getUi().alert(
+              "List Settings byl (re)inicializován."
+            );
+          })
+          .initSettingsSheet();
+      }
+    </script>
+  </body>
+</html>

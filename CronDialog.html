@@ -1,0 +1,1089 @@
+<!DOCTYPE html>
+<html lang="cs">
+  <head>
+    <meta charset="utf-8" />
+    <title>Nastavení Automatických Aktualizací</title>
+    <style>
+      :root {
+        --primary-color: #007bff;
+        --primary-hover-color: #0056b3;
+        --danger-color: #dc3545;
+        --danger-hover-color: #c82333;
+        --light-gray-color: #f8f9fa;
+        --medium-gray-color: #e9ecef;
+        --dark-gray-color: #6c757d;
+        --text-color: #212529;
+        --border-color: #ced4da;
+        --border-radius: 0.3rem;
+        --box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+      }
+
+      body {
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif,
+          "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
+          "Noto Color Emoji";
+        background-color: var(--light-gray-color);
+        color: var(--text-color);
+        margin: 0;
+        padding: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        min-height: 100vh;
+      }
+
+      #cronManagementContainer {
+        background-color: #ffffff;
+        padding: 25px;
+        border-radius: var(--border-radius);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        max-width: 700px;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: var(--dark-gray-color);
+        cursor: default;
+      }
+
+      .checkbox-label {
+        display: block;
+        margin-bottom: 6px;
+        font-weight: normal;
+        color: var(--text-color);
+        cursor: pointer;
+        padding: 2px 0;
+      }
+      .checkbox-label input[type="checkbox"] {
+        margin-right: 8px;
+        vertical-align: middle;
+      }
+      .checkbox-label.disabled-label {
+        /* Styl pro neaktivní label checkboxu */
+        color: var(--medium-gray-color);
+        cursor: not-allowed;
+      }
+
+      input[type="number"],
+      input[type="text"],
+      input[type="time"],
+      select {
+        width: 100%;
+        padding: 10px 12px;
+        margin-bottom: 18px;
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius);
+        box-sizing: border-box;
+        font-size: 1rem;
+        background-color: #fff;
+        color: var(--text-color);
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+      }
+
+      input[type="text"]#cAccountSearch {
+        font-size: 0.95rem;
+        padding: 8px 10px;
+        margin-bottom: 10px;
+      }
+
+      input[type="number"]:focus,
+      input[type="text"]:focus,
+      input[type="time"]:focus,
+      select:focus {
+        border-color: var(--primary-color);
+        outline: 0;
+        box-shadow: var(--box-shadow);
+      }
+
+      button {
+        background-color: var(--primary-color);
+        color: white;
+        padding: 12px 20px;
+        border: none;
+        border-radius: var(--border-radius);
+        cursor: pointer;
+        font-size: 1rem;
+        font-weight: 600;
+        transition: background-color 0.15s ease-in-out;
+        width: 100%;
+        margin-top: 10px;
+      }
+      button:hover {
+        background-color: var(--primary-hover-color);
+      }
+      button:disabled {
+        background-color: var(--medium-gray-color);
+        cursor: not-allowed;
+      }
+
+      .form-group {
+        margin-bottom: 20px;
+      }
+      .form-group:last-of-type {
+        margin-bottom: 0;
+      }
+
+      .checkbox-list-container {
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius);
+        padding: 10px;
+        max-height: 150px;
+        overflow-y: auto;
+        background-color: #fff;
+      }
+      #cAccountsList.checkbox-list-container {
+        max-height: 180px;
+      }
+
+      .metric-section {
+        margin-bottom: 15px;
+      }
+      .metric-section:last-child {
+        margin-bottom: 0;
+      }
+
+      .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+      }
+      .section-header h4 {
+        margin: 0;
+        font-size: 0.95rem;
+        color: var(--primary-color);
+      }
+      .section-header .toggle-buttons {
+        display: flex;
+        align-items: center;
+      }
+      .section-header .toggle-buttons button {
+        background: none;
+        border: none;
+        color: var(--primary-color);
+        cursor: pointer;
+        padding: 2px 4px;
+        font-size: 0.85rem;
+        font-weight: normal;
+        text-decoration: underline;
+        width: auto;
+        margin: 0 2px;
+      }
+      .section-header .toggle-buttons button:hover {
+        color: var(--primary-hover-color);
+        text-decoration: none;
+      }
+      .selected-count {
+        font-size: 0.85rem;
+        color: var(--dark-gray-color);
+        margin-left: 8px;
+        font-weight: normal;
+      }
+
+      .placeholder-text,
+      #cNoAccountsFound {
+        color: var(--dark-gray-color);
+        font-style: italic;
+        padding: 10px;
+        text-align: center;
+      }
+      #cNoAccountsFound {
+        display: none;
+        margin-top: 5px;
+      }
+
+      #existingJobsContainer {
+        margin-top: 30px;
+        border-top: 1px solid var(--medium-gray-color);
+        padding-top: 20px;
+      }
+      #existingJobsContainer h3 {
+        margin-top: 0;
+        color: var(--primary-color);
+      }
+      .job-item {
+        background-color: var(--light-gray-color);
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius);
+        padding: 10px 15px;
+        margin-bottom: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .job-item-details {
+        flex-grow: 1;
+      }
+      .job-item-details strong {
+        color: var(--text-color);
+      }
+      .job-item-details span {
+        font-size: 0.9em;
+        color: var(--dark-gray-color);
+        display: block;
+      }
+      .job-item-actions button {
+        width: auto;
+        padding: 6px 12px;
+        font-size: 0.9rem;
+        margin-left: 8px;
+      }
+      .job-item-actions .edit-btn {
+        background-color: #ffc107;
+        color: #212529;
+      }
+      .job-item-actions .edit-btn:hover {
+        background-color: #e0a800;
+      }
+      .job-item-actions .delete-btn {
+        background-color: var(--danger-color);
+      }
+      .job-item-actions .delete-btn:hover {
+        background-color: var(--danger-hover-color);
+      }
+      .status-indicator {
+        padding: 3px 8px;
+        border-radius: var(--border-radius);
+        font-size: 0.8em;
+        color: white;
+        margin-left: 8px;
+      }
+      .status-active {
+        background-color: #28a745;
+      }
+      .status-inactive {
+        background-color: var(--dark-gray-color);
+      }
+
+      #jobFormTitle {
+        margin-top: 0;
+        color: var(--primary-color);
+      }
+      #cancelEditButton {
+        background-color: var(--dark-gray-color);
+        margin-top: 5px;
+      }
+      #cancelEditButton:hover {
+        background-color: #5a6268;
+      }
+    </style>
+    <base target="_top" />
+  </head>
+  <body>
+    <div id="cronManagementContainer">
+      <h3 id="jobFormTitle">Nová automatická úloha</h3>
+      <form id="cForm">
+        <div class="form-group">
+          <label for="cJobName">Název úlohy (unikátní):</label>
+          <input
+            type="text"
+            id="cJobName"
+            placeholder="Např. Denní report CZ kampaní"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="cLevel">Úroveň dat:</label>
+          <select id="cLevel">
+            <option value="ad" selected>Reklama (Ad)</option>
+            <option value="adset">Sestava reklam (Ad Set)</option>
+            <option value="campaign">Kampaň (Campaign)</option>
+            <option value="account">Účet (Account)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="checkbox-label" id="cShowCreativeImageLabel">
+            <input
+              type="checkbox"
+              id="cShowCreativeImage"
+              name="showCreativeImage"
+            />
+            Zobrazit náhled kreativy <small>(pouze pro úroveň "Reklama")</small>
+          </label>
+        </div>
+        <div class="form-group">
+          <label>Metriky pro noční doplnění:</label>
+          <div id="cMetricsContainer">
+            <div class="metric-section" id="metrics-general">
+              <div class="section-header">
+                <h4>Obecné metriky výkonu</h4>
+                <div class="toggle-buttons">
+                  <button
+                    type="button"
+                    onclick="toggleCheckboxesInSection('metrics-basic-performance', true)"
+                  >
+                    Vše</button
+                  >|
+                  <button
+                    type="button"
+                    onclick="toggleCheckboxesInSection('metrics-general', false)"
+                  >
+                    Nic
+                  </button>
+                  <span
+                    id="metrics-basic-performance-count"
+                    class="selected-count"
+                    >(0)</span
+                  >
+                </div>
+              </div>
+              <div class="checkbox-list-container">
+                <label class="checkbox-label"
+                  ><input type="checkbox" name="metric" value="spend" />
+                  Spend</label
+                >
+                <label class="checkbox-label"
+                  ><input type="checkbox" name="metric" value="impressions" />
+                  Impressions</label
+                >
+                <label class="checkbox-label"
+                  ><input type="checkbox" name="metric" value="reach" />
+                  Reach</label
+                >
+                <label class="checkbox-label"
+                  ><input type="checkbox" name="metric" value="frequency" />
+                  Frequency</label
+                >
+                <label class="checkbox-label"
+                  ><input type="checkbox" name="metric" value="clicks" /> Clicks
+                  (All)</label
+                >
+                <label class="checkbox-label"
+                  ><input type="checkbox" name="metric" value="cpc" />
+                  CPC</label
+                >
+                <label class="checkbox-label"
+                  ><input type="checkbox" name="metric" value="cpm" />
+                  CPM</label
+                >
+                <label class="checkbox-label"
+                  ><input type="checkbox" name="metric" value="ctr" />
+                  CTR</label
+                >
+                <label class="checkbox-label"
+                  ><input
+                    type="checkbox"
+                    name="metric"
+                    value="outbound_clicks"
+                  />
+                  Outbound Clicks</label
+                >
+                <label class="checkbox-label"
+                  ><input
+                    type="checkbox"
+                    name="metric"
+                    value="cost_per_outbound_click"
+                  />
+                  Cost per Outbound Click</label
+                >
+                <label class="checkbox-label"
+                  ><input type="checkbox" name="metric" value="outbound_ctr" />
+                  Outbound CTR</label
+                >
+                <label class="checkbox-label"
+                  ><input type="checkbox" name="metric" value="link_click" />
+                  Link Clicks (Action)</label
+                >
+                <label class="checkbox-label"
+                  ><input
+                    type="checkbox"
+                    name="metric"
+                    value="cost_per_link_click"
+                  />
+                  Cost per Link Click (Action)</label
+                >
+                <label class="checkbox-label"
+                  ><input
+                    type="checkbox"
+                    name="metric"
+                    value="link_click_through_rate"
+                  />
+                  Link Click-Through Rate (Link CTR)</label
+                >
+              </div>
+            </div>
+            <div class="metric-section" id="metrics-ecommerce">
+              <div class="section-header">
+                <h4>E-commerce (Actions)</h4>
+                <div class="toggle-buttons">
+                  <button
+                    type="button"
+                    onclick="toggleCheckboxesInSection('metrics-ecommerce', true)"
+                  >
+                    Vše</button
+                  >|
+                  <button
+                    type="button"
+                    onclick="toggleCheckboxesInSection('metrics-ecommerce', false)"
+                  >
+                    Nic
+                  </button>
+                  <span id="metrics-ecommerce-count" class="selected-count"
+                    >(0)</span
+                  >
+                </div>
+              </div>
+              <div class="checkbox-list-container">
+                <label class="checkbox-label"
+                  ><input type="checkbox" name="metric" value="view_content" />
+                  View Content (Action)</label
+                >
+                <label class="checkbox-label"
+                  ><input
+                    type="checkbox"
+                    name="metric"
+                    value="cost_per_view_content"
+                  />
+                  Cost per View Content (Action)</label
+                >
+                <label class="checkbox-label"
+                  ><input type="checkbox" name="metric" value="adds_to_cart" />
+                  Adds to Cart (Action)</label
+                >
+                <label class="checkbox-label"
+                  ><input
+                    type="checkbox"
+                    name="metric"
+                    value="cost_per_add_to_cart"
+                  />
+                  Cost per Add to Cart (Action)</label
+                >
+                <label class="checkbox-label"
+                  ><input
+                    type="checkbox"
+                    name="metric"
+                    value="checkouts_initiated"
+                  />
+                  Checkouts Initiated (Action)</label
+                >
+                <label class="checkbox-label"
+                  ><input
+                    type="checkbox"
+                    name="metric"
+                    value="cost_per_checkout_initiated"
+                  />
+                  Cost per Checkout Initiated (Action)</label
+                >
+                <label class="checkbox-label"
+                  ><input type="checkbox" name="metric" value="purchases" />
+                  Purchases (Action)</label
+                >
+                <label class="checkbox-label"
+                  ><input
+                    type="checkbox"
+                    name="metric"
+                    value="cost_per_purchase"
+                  />
+                  Cost per Purchase (Action)</label
+                >
+                <label class="checkbox-label"
+                  ><input type="checkbox" name="metric" value="purchase_roas" />
+                  purchase_roas</label
+                >
+              </div>
+            </div>
+            <div class="metric-section" id="metrics-leadgen">
+              <div class="section-header">
+                <h4>Lead Gen (Actions)</h4>
+                <div class="toggle-buttons">
+                  <button
+                    type="button"
+                    onclick="toggleCheckboxesInSection('metrics-leadgen', true)"
+                  >
+                    Vše</button
+                  >|
+                  <button
+                    type="button"
+                    onclick="toggleCheckboxesInSection('metrics-leadgen', false)"
+                  >
+                    Nic
+                  </button>
+                  <span id="metrics-leadgen-count" class="selected-count"
+                    >(0)</span
+                  >
+                </div>
+              </div>
+              <div class="checkbox-list-container">
+                <label class="checkbox-label"
+                  ><input type="checkbox" name="metric" value="leads" /> Leads
+                  (Action)</label
+                >
+                <label class="checkbox-label"
+                  ><input type="checkbox" name="metric" value="cost_per_lead" />
+                  Cost per Lead (Action)</label
+                >
+                <label class="checkbox-label"
+                  ><input
+                    type="checkbox"
+                    name="metric"
+                    value="unique_actions_lead"
+                  />
+                  Unique Leads (Action)</label
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="section-header">
+            <label style="margin-bottom: 0">Reklamní účty:</label>
+            <div class="toggle-buttons">
+              <button
+                type="button"
+                onclick="toggleAllCheckboxes('cAccountsList', true)"
+              >
+                Vše
+              </button>
+              |
+              <button
+                type="button"
+                onclick="toggleAllCheckboxes('cAccountsList', false)"
+              >
+                Nic
+              </button>
+              <span id="cAccountsList-count" class="selected-count">(0)</span>
+            </div>
+          </div>
+          <input
+            type="text"
+            id="cAccountSearch"
+            placeholder="Vyhledat účet (název nebo ID)..."
+            oninput="filterAccounts()"
+          />
+          <div id="cAccountsList" class="checkbox-list-container">
+            <p class="placeholder-text" id="cAccountsInitialPlaceholder">
+              Načítám účty…
+            </p>
+          </div>
+          <p id="cNoAccountsFound">Žádné účty neodpovídají hledání.</p>
+        </div>
+
+        <div class="form-group">
+          <label for="cTime">Čas spuštění (HH:MM):</label>
+          <input type="time" id="cTime" value="01:00" />
+        </div>
+
+        <button type="button" id="saveJobButton" onclick="saveJob()">
+          💾 Uložit úlohu
+        </button>
+        <button
+          type="button"
+          id="cancelEditButton"
+          onclick="resetFormAndMode()"
+          style="display: none"
+        >
+          Zrušit úpravy
+        </button>
+      </form>
+
+      <div id="existingJobsContainer">
+        <h3>Existující automatické úlohy</h3>
+        <div id="jobsList">
+          <p class="placeholder-text">Načítám úlohy...</p>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let allLoadedAccounts = [];
+      let allLoadedCronJobs = [];
+      let currentEditJobName = null;
+
+      function updateSelectedCount(containerId, counterId, itemSelector) {
+        const container = document.getElementById(containerId);
+        const counter = document.getElementById(counterId);
+        if (container && counter) {
+          const selectedItems = container.querySelectorAll(
+            itemSelector + ":checked"
+          ).length;
+          counter.textContent = `(${selectedItems})`;
+        } else {
+          // console.error(`Counter or container not found for ${counterId} / ${containerId}`);
+        }
+      }
+
+      function updateAllMetricCounts() {
+        updateSelectedCount(
+          "metrics-general",
+          "metrics-general-count",
+          'input[type="checkbox"][name="metric"]'
+        );
+        updateSelectedCount(
+          "metrics-ecommerce",
+          "metrics-ecommerce-count",
+          'input[type="checkbox"][name="metric"]'
+        );
+        updateSelectedCount(
+          "metrics-leadgen",
+          "metrics-leadgen-count",
+          'input[type="checkbox"][name="metric"]'
+        );
+      }
+
+      function updateAccountCounter() {
+        updateSelectedCount(
+          "cAccountsList",
+          "cAccountsList-count",
+          'input[type="checkbox"][name="account"]'
+        );
+      }
+
+      function addMetricCheckboxListeners() {
+        document
+          .querySelectorAll(
+            '#cMetricsContainer input[type="checkbox"][name="metric"]'
+          )
+          .forEach((checkbox) => {
+            checkbox.addEventListener("change", updateAllMetricCounts);
+          });
+      }
+      function addAccountCheckboxListeners() {
+        document
+          .querySelectorAll(
+            '#cAccountsList input[type="checkbox"][name="account"]'
+          )
+          .forEach((checkbox) => {
+            checkbox.addEventListener("change", updateAccountCounter);
+          });
+      }
+
+      // --- NOVÁ FUNKCE PRO OVLÁDÁNÍ CHECKBOXU KREATIVY ---
+      function toggleCreativeCheckboxAvailability() {
+        const levelSelect = document.getElementById("cLevel");
+        const creativeCheckbox = document.getElementById("cShowCreativeImage");
+        const creativeCheckboxLabel = document.getElementById(
+          "cShowCreativeImageLabel"
+        );
+
+        if (levelSelect.value === "ad") {
+          creativeCheckbox.disabled = false;
+          creativeCheckboxLabel.classList.remove("disabled-label");
+        } else {
+          creativeCheckbox.disabled = true;
+          creativeCheckbox.checked = false; // Automaticky odškrtnout, pokud není úroveň 'ad'
+          creativeCheckboxLabel.classList.add("disabled-label");
+        }
+      }
+
+      function toggleCheckboxesInSection(sectionId, checkedState) {
+        const section = document.getElementById(sectionId);
+        if (section) {
+          const checkboxes = section.querySelectorAll('input[type="checkbox"]');
+          checkboxes.forEach((checkbox) => {
+            checkbox.checked = checkedState;
+          });
+        }
+        updateAllMetricCounts();
+      }
+
+      function toggleAllCheckboxes(containerId, checkedState) {
+        const container = document.getElementById(containerId);
+        if (container) {
+          const checkboxes = container.querySelectorAll(
+            'input[type="checkbox"]'
+          );
+          checkboxes.forEach((checkbox) => {
+            checkbox.checked = checkedState;
+          });
+        }
+        if (containerId === "cAccountsList") {
+          updateAccountCounter();
+          filterAccounts();
+        }
+      }
+
+      function filterAccounts() {
+        const searchTerm = document
+          .getElementById("cAccountSearch")
+          .value.toLowerCase();
+        const accountsListDiv = document.getElementById("cAccountsList");
+        const accountLabels =
+          accountsListDiv.getElementsByClassName("checkbox-label");
+        const noAccountsFoundMessage =
+          document.getElementById("cNoAccountsFound");
+        const initialPlaceholder = document.getElementById(
+          "cAccountsInitialPlaceholder"
+        );
+        let visibleAccountCount = 0;
+
+        if (initialPlaceholder) initialPlaceholder.style.display = "none";
+
+        for (let i = 0; i < accountLabels.length; i++) {
+          const label = accountLabels[i];
+          const labelText = label.textContent || label.innerText;
+          if (labelText.toLowerCase().includes(searchTerm)) {
+            label.style.display = "block";
+            visibleAccountCount++;
+          } else {
+            label.style.display = "none";
+          }
+        }
+
+        noAccountsFoundMessage.style.display =
+          visibleAccountCount === 0 && accountLabels.length > 0 && searchTerm
+            ? "block"
+            : "none";
+      }
+
+      function saveJob() {
+        const jobName = document.getElementById("cJobName").value.trim();
+        const level = document.getElementById("cLevel").value;
+        const timeValue = document.getElementById("cTime").value;
+        const showCreativeImage =
+          document.getElementById("cShowCreativeImage").checked; // Načíst hodnotu nového checkboxu
+
+        if (!jobName) {
+          alert("Zadejte název úlohy.");
+          document.getElementById("cJobName").focus();
+          return;
+        }
+        if (!timeValue) {
+          alert("Zadejte čas spuštění.");
+          document.getElementById("cTime").focus();
+          return;
+        }
+
+        const selectedMetrics = Array.from(
+          document.querySelectorAll(
+            '#cMetricsContainer input[type="checkbox"][name="metric"]:checked'
+          )
+        ).map((cb) => cb.value);
+        const selectedAccounts = Array.from(
+          document.querySelectorAll(
+            '#cAccountsList input[type="checkbox"]:checked'
+          )
+        ).map((cb) => cb.value);
+
+        if (selectedMetrics.length === 0) {
+          alert("Vyberte alespoň jednu metriku.");
+          return;
+        }
+        if (selectedAccounts.length === 0) {
+          alert("Vyberte alespoň jeden účet.");
+          return;
+        }
+
+        // Přidat showCreativeImage do jobConfig
+        const jobConfig = {
+          jobName,
+          level,
+          time: timeValue,
+          metrics: selectedMetrics,
+          accounts: selectedAccounts,
+          showCreativeImage: showCreativeImage, // Nový parametr
+        };
+
+        const saveButton = document.getElementById("saveJobButton");
+        const originalButtonText = saveButton.innerHTML;
+        saveButton.innerHTML = "⏳ Ukládám...";
+        saveButton.disabled = true;
+
+        google.script.run
+          .withSuccessHandler((response) => {
+            alert(
+              response.message ||
+                (currentEditJobName ? "Úloha aktualizována." : "Úloha uložena.")
+            );
+            saveButton.innerHTML = originalButtonText;
+            saveButton.disabled = false;
+            if (response.success) {
+              resetFormAndMode();
+              loadAndDisplayCronJobs();
+            }
+          })
+          .withFailureHandler((err) => {
+            alert(
+              "Chyba při ukládání úlohy: " +
+                (err.message || JSON.stringify(err))
+            );
+            saveButton.innerHTML = originalButtonText;
+            saveButton.disabled = false;
+          })
+          .saveOrUpdateCronJob(jobConfig);
+      }
+
+      function populateAccountsList(accounts) {
+        allLoadedAccounts = accounts;
+        const accountsListDiv = document.getElementById("cAccountsList");
+        const initialPlaceholder = document.getElementById(
+          "cAccountsInitialPlaceholder"
+        );
+        const noAccountsFoundMessage =
+          document.getElementById("cNoAccountsFound");
+
+        if (initialPlaceholder) initialPlaceholder.style.display = "none";
+        noAccountsFoundMessage.style.display = "none";
+        accountsListDiv.innerHTML = "";
+
+        if (accounts && accounts.length > 0) {
+          accounts.forEach(({ id, name }) => {
+            const label = document.createElement("label");
+            label.className = "checkbox-label";
+            const checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.name = "account";
+            checkbox.value = id;
+            label.appendChild(checkbox);
+            label.appendChild(document.createTextNode(` ${name} (act_${id})`));
+            accountsListDiv.appendChild(label);
+          });
+          addAccountCheckboxListeners();
+        } else {
+          accountsListDiv.innerHTML =
+            '<p class="placeholder-text">Žádné účty nenalezeny v Settings.</p>';
+        }
+        updateAccountCounter();
+        filterAccounts();
+      }
+
+      function loadAndDisplayCronJobs() {
+        const jobsListDiv = document.getElementById("jobsList");
+        jobsListDiv.innerHTML =
+          '<p class="placeholder-text">Načítám existující úlohy...</p>';
+        google.script.run
+          .withSuccessHandler((jobs) => {
+            allLoadedCronJobs = jobs;
+            displayCronJobs(jobs);
+            try {
+              google.script.host.setHeight(document.body.scrollHeight + 80);
+            } catch (e) {
+              console.warn("Nepodařilo se nastavit výšku hostitele.");
+            }
+          })
+          .withFailureHandler((err) => {
+            jobsListDiv.innerHTML =
+              '<p class="placeholder-text" style="color:red;">Chyba při načítání úloh.</p>';
+            alert(
+              "Chyba při načítání seznamu cron úloh: " +
+                (err.message || JSON.stringify(err))
+            );
+          })
+          .listCronJobs();
+      }
+
+      function displayCronJobs(jobs) {
+        const jobsListDiv = document.getElementById("jobsList");
+        jobsListDiv.innerHTML = "";
+
+        if (!jobs || jobs.length === 0) {
+          jobsListDiv.innerHTML =
+            '<p class="placeholder-text">Nebyly nalezeny žádné automatické úlohy.</p>';
+          return;
+        }
+
+        jobs.forEach((job) => {
+          const item = document.createElement("div");
+          item.className = "job-item";
+
+          const details = document.createElement("div");
+          details.className = "job-item-details";
+          let creativeText = job.config.showCreativeImage
+            ? ", Kreativy: Ano"
+            : ""; // Zobrazit info o kreativách
+          details.innerHTML = `<strong>${job.jobName}</strong>
+                                 <span>Účty: ${
+                                   job.config.accounts.length
+                                 }, Metriky: ${
+            job.config.metrics.length
+          }, Level: ${job.config.level}, Čas: ${
+            job.config.time || "N/A"
+          }${creativeText}</span>`;
+
+          const actions = document.createElement("div");
+          actions.className = "job-item-actions";
+
+          const statusIndicator = document.createElement("span");
+          statusIndicator.className =
+            "status-indicator " +
+            (job.triggerInfo && job.triggerInfo.active
+              ? "status-active"
+              : "status-inactive");
+          statusIndicator.title =
+            job.triggerInfo && job.triggerInfo.active
+              ? "Trigger je aktivní"
+              : "Trigger není aktivní nebo chybí";
+          statusIndicator.textContent =
+            job.triggerInfo && job.triggerInfo.active ? "Aktivní" : "Neaktivní";
+          actions.appendChild(statusIndicator);
+
+          const editButton = document.createElement("button");
+          editButton.textContent = "Upravit";
+          editButton.className = "edit-btn";
+          editButton.onclick = function () {
+            populateFormForEdit(job.jobName);
+          };
+          actions.appendChild(editButton);
+
+          const deleteButton = document.createElement("button");
+          deleteButton.textContent = "Smazat";
+          deleteButton.className = "delete-btn";
+          deleteButton.onclick = function () {
+            handleDeleteJob(job.jobName);
+          };
+          actions.appendChild(deleteButton);
+
+          item.appendChild(details);
+          item.appendChild(actions);
+          jobsListDiv.appendChild(item);
+        });
+      }
+
+      function populateFormForEdit(jobName) {
+        const job = allLoadedCronJobs.find((j) => j.jobName === jobName);
+        if (!job) {
+          alert("Úloha nebyla nalezena.");
+          return;
+        }
+        currentEditJobName = jobName;
+
+        document.getElementById(
+          "jobFormTitle"
+        ).textContent = `Upravit úlohu: ${jobName}`;
+        document.getElementById("cJobName").value = job.jobName;
+        document.getElementById("cJobName").readOnly = true;
+        document.getElementById("cLevel").value = job.config.level;
+        document.getElementById("cTime").value = job.config.time || "01:00";
+        document.getElementById("cShowCreativeImage").checked =
+          job.config.showCreativeImage || false; // Nastavit checkbox kreativy
+
+        toggleCreativeCheckboxAvailability(); // Aktualizovat dostupnost checkboxu kreativy
+
+        document
+          .querySelectorAll(
+            '#cMetricsContainer input[type="checkbox"][name="metric"]'
+          )
+          .forEach((cb) => (cb.checked = false));
+        job.config.metrics.forEach((metricValue) => {
+          const cb = document.querySelector(
+            `#cMetricsContainer input[type="checkbox"][value="${metricValue}"]`
+          );
+          if (cb) cb.checked = true;
+        });
+
+        document
+          .querySelectorAll('#cAccountsList input[type="checkbox"]')
+          .forEach((cb) => (cb.checked = false));
+        job.config.accounts.forEach((accId) => {
+          const cb = document.querySelector(
+            `#cAccountsList input[type="checkbox"][value="${accId}"]`
+          );
+          if (cb) cb.checked = true;
+        });
+
+        updateAllMetricCounts();
+        updateAccountCounter();
+        filterAccounts();
+
+        document.getElementById("saveJobButton").textContent =
+          "💾 Aktualizovat úlohu";
+        document.getElementById("cancelEditButton").style.display = "block";
+        window.scrollTo(0, 0);
+      }
+
+      function resetFormAndMode() {
+        currentEditJobName = null;
+        document.getElementById("jobFormTitle").textContent =
+          "Nová automatická úloha";
+        document.getElementById("cForm").reset();
+        document.getElementById("cJobName").readOnly = false;
+
+        document
+          .querySelectorAll('#cMetricsContainer input[type="checkbox"]')
+          .forEach((cb) => (cb.checked = false));
+        document
+          .querySelectorAll('#cAccountsList input[type="checkbox"]')
+          .forEach((cb) => (cb.checked = false));
+        document.getElementById("cShowCreativeImage").checked = false; // Resetovat checkbox kreativy
+
+        updateAllMetricCounts();
+        updateAccountCounter();
+        filterAccounts();
+
+        document.getElementById("cTime").value = "01:00";
+        document.getElementById("cLevel").value = "ad"; // Defaultně 'ad', aby byl checkbox kreativy aktivní
+        toggleCreativeCheckboxAvailability(); // Aktualizovat dostupnost po resetu
+
+        document.getElementById("saveJobButton").textContent = "� Uložit úlohu";
+        document.getElementById("cancelEditButton").style.display = "none";
+      }
+
+      function handleDeleteJob(jobName) {
+        if (
+          confirm(
+            `Opravdu chcete smazat úlohu "${jobName}"? Tuto akci nelze vrátit.`
+          )
+        ) {
+          google.script.run
+            .withSuccessHandler((response) => {
+              alert(response.message || "Úloha smazána.");
+              if (response.success) {
+                if (currentEditJobName === jobName) {
+                  resetFormAndMode();
+                }
+                loadAndDisplayCronJobs();
+              }
+            })
+            .withFailureHandler((err) => {
+              alert(
+                "Chyba při mazání úlohy: " +
+                  (err.message || JSON.stringify(err))
+              );
+            })
+            .deleteCronJob(jobName);
+        }
+      }
+
+      function initializeDialogData() {
+        if (
+          typeof google === "undefined" ||
+          typeof google.script === "undefined" ||
+          typeof google.script.run === "undefined"
+        ) {
+          setTimeout(initializeDialogData, 200);
+          return;
+        }
+
+        addMetricCheckboxListeners();
+        document
+          .getElementById("cLevel")
+          .addEventListener("change", toggleCreativeCheckboxAvailability); // Listener pro změnu úrovně
+
+        const accountsListDiv = document.getElementById("cAccountsList");
+        const initialPlaceholder = document.getElementById(
+          "cAccountsInitialPlaceholder"
+        );
+
+        google.script.run
+          .withSuccessHandler((accounts) => {
+            populateAccountsList(accounts);
+            loadAndDisplayCronJobs();
+            updateAllMetricCounts();
+            toggleCreativeCheckboxAvailability(); // Iniciální kontrola dostupnosti checkboxu kreativy
+          })
+          .withFailureHandler((err) => {
+            if (initialPlaceholder) initialPlaceholder.style.display = "none";
+            accountsListDiv.innerHTML =
+              '<p class="placeholder-text" style="color:red;">Chyba při načítání účtů.</p>';
+            alert(
+              "Chyba při načítání seznamu účtů: " +
+                (err.message || JSON.stringify(err))
+            );
+            loadAndDisplayCronJobs();
+            updateAllMetricCounts();
+            toggleCreativeCheckboxAvailability(); // Iniciální kontrola i při chybě
+          })
+          .getAccountList();
+      }
+
+      window.onload = function () {
+        initializeDialogData();
+      };
+    </script>
+  </body>
+</html>
